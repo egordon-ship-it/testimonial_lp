@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your Feedback Matters | Dynamic Media Music</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet" />
+  <style>
+    /* --- Brand colors (customize from dynamicmediamusic.com) --- */
+    :root {
+      --brand-primary: #0d2137;
+      --brand-primary-light: #1a3a5c;
+      --brand-accent: #2563eb;
+      --brand-accent-hover: #1d4ed8;
+      --text-primary: #0f172a;
+      --text-muted: #475569;
+      --bg-page: #f8fafc;
+      --bg-card: #ffffff;
+      --border-color: #e2e8f0;
+      --radius: 12px;
+      --shadow: 0 4px 24px rgba(13, 33, 55, 0.08);
+      --transition: 0.25s ease;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-page);
+      color: var(--text-primary);
+      line-height: 1.5;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    .page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 2rem 1rem;
+    }
+
+    .survey-container {
+      width: 100%;
+      max-width: 520px;
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 2.5rem 2rem;
+      position: relative;
+    }
+
+    /* Intro (headline + subhead) */
+    .intro {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .intro h1 {
+      margin: 0 0 0.75rem;
+      font-size: 1.75rem;
+      font-weight: 700;
+      color: var(--brand-primary);
+    }
+
+    .intro p {
+      margin: 0;
+      font-size: 1rem;
+      color: var(--text-muted);
+      max-width: 42ch;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    /* Rating step: "How did we do today?" + stars */
+    .step-rating {
+      text-align: center;
+      padding: 1rem 0;
+    }
+
+    .step-rating h2 {
+      margin: 0 0 1.5rem;
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--text-primary);
+    }
+
+    .stars-wrap {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .star {
+      width: 48px;
+      height: 48px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      padding: 0;
+      transition: transform var(--transition);
+    }
+
+    .star:hover {
+      transform: scale(1.1);
+    }
+
+    .star svg {
+      width: 100%;
+      height: 100%;
+      fill: var(--border-color);
+      transition: fill var(--transition);
+    }
+
+    .star:hover svg,
+    .star.active svg,
+    .star.filled svg,
+    .star.hover-fill svg {
+      fill: #f59e0b;
+    }
+
+    /* Feedback step (conditional content) */
+    .step-feedback {
+      display: none;
+      text-align: left;
+      animation: fadeIn 0.35s ease;
+    }
+
+    .step-feedback.visible {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .step-feedback h3 {
+      margin: 0 0 0.5rem;
+      font-size: 1.125rem;
+      font-weight: 600;
+      color: var(--brand-primary);
+    }
+
+    .step-feedback .copy {
+      margin-bottom: 1.25rem;
+      color: var(--text-muted);
+      font-size: 0.9375rem;
+    }
+
+    .step-feedback textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 0.75rem 1rem;
+      font-family: inherit;
+      font-size: 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      resize: vertical;
+      margin-bottom: 1rem;
+      transition: border-color var(--transition), box-shadow var(--transition);
+    }
+
+    .step-feedback textarea:focus {
+      outline: none;
+      border-color: var(--brand-accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .step-feedback textarea::placeholder {
+      color: #94a3b8;
+    }
+
+    .step-feedback .required-label {
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      margin-top: -0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    /* Permission (5-star path) */
+    .permission-wrap {
+      margin-top: 1.25rem;
+      padding-top: 1.25rem;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .permission-wrap p {
+      margin: 0 0 1rem;
+      font-size: 0.9375rem;
+      color: var(--text-primary);
+    }
+
+    .permission-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .permission-options label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      font-size: 0.9375rem;
+    }
+
+    .permission-options input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--brand-accent);
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-block;
+      padding: 0.75rem 1.5rem;
+      font-family: inherit;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color var(--transition), transform 0.15s ease;
+    }
+
+    .btn:active {
+      transform: scale(0.98);
+    }
+
+    .btn-primary {
+      background: var(--brand-accent);
+      color: #fff;
+      width: 100%;
+      margin-top: 0.25rem;
+    }
+
+    .btn-primary:hover {
+      background: var(--brand-accent-hover);
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    /* Close / thank you message */
+    .thank-you {
+      display: none;
+      text-align: center;
+      padding: 1.5rem 0;
+      animation: fadeIn 0.35s ease;
+    }
+
+    .thank-you.visible {
+      display: block;
+    }
+
+    .thank-you p {
+      margin: 0;
+      font-size: 1.0625rem;
+      color: var(--text-primary);
+    }
+
+    /* Back link (optional) */
+    .back-link {
+      display: inline-block;
+      margin-top: 1.5rem;
+      font-size: 0.875rem;
+      color: var(--brand-accent);
+      text-decoration: none;
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-family: inherit;
+      padding: 0;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    /* Hide rating step after selection */
+    .step-rating.hidden {
+      display: none;
+    }
+
+    .intro.hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="survey-container">
+      <!-- HubSpot: Add form embed or tracking script here if needed -->
+
+      <header class="intro">
+        <h1>Your feedback matters.</h1>
+        <p>Please take a moment to rate your recent support experience. This survey is optional and takes about a minute.</p>
+      </header>
+
+      <!-- Step 1: Star rating -->
+      <section class="step-rating" id="step-rating" aria-label="Rate your experience">
+        <h2>How did we do today?</h2>
+        <p class="copy" style="margin-bottom:1rem; color:var(--text-muted); font-size:0.9375rem;">How was your experience with our support today?</p>
+        <div class="stars-wrap" role="group" aria-label="Rate 1 to 5 stars">
+          <button type="button" class="star" data-value="1" aria-label="1 star"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
+          <button type="button" class="star" data-value="2" aria-label="2 stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
+          <button type="button" class="star" data-value="3" aria-label="3 stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
+          <button type="button" class="star" data-value="4" aria-label="4 stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
+          <button type="button" class="star" data-value="5" aria-label="5 stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
+        </div>
+      </section>
+
+      <!-- Path 1–3: Service Recovery -->
+      <section class="step-feedback" id="path-1-3" data-path="recovery">
+        <h3>Thank you for letting us know.</h3>
+        <p class="copy">What could we have done better?</p>
+        <textarea id="feedback-1-3" name="feedback_recovery" placeholder="Anything you're willing to share helps us improve." required></textarea>
+        <p class="required-label">This field is required.</p>
+        <button type="button" class="btn btn-primary" id="submit-1-3">Submit feedback</button>
+        <button type="button" class="back-link" data-back="rating">Change rating</button>
+      </section>
+
+      <!-- Path 4: Improvement Insight -->
+      <section class="step-feedback" id="path-4" data-path="improvement">
+        <h3>Thanks — we're glad it went well.</h3>
+        <p class="copy">What would have made this a five-star experience for you?</p>
+        <textarea id="feedback-4" name="feedback_improvement" placeholder="One small detail or suggestion is perfect."></textarea>
+        <button type="button" class="btn btn-primary" id="submit-4">Submit feedback</button>
+        <button type="button" class="back-link" data-back="rating">Change rating</button>
+      </section>
+
+      <!-- Path 5: Testimonial Capture -->
+      <section class="step-feedback" id="path-5" data-path="testimonial">
+        <h3>That's great to hear — thank you.</h3>
+        <p class="copy">If a colleague asked about working with us, what would you tell them?</p>
+        <textarea id="feedback-5" name="feedback_testimonial" placeholder="Share your thoughts."></textarea>
+        <div class="permission-wrap">
+          <p>Would you be open to us sharing your feedback in our marketing, such as on our website, emails, or social media?</p>
+          <div class="permission-options">
+            <label><input type="radio" name="permission" value="yes" /> Yes</label>
+            <label><input type="radio" name="permission" value="no" /> No</label>
+          </div>
+        </div>
+        <button type="button" class="btn btn-primary" id="submit-5">Submit</button>
+        <button type="button" class="back-link" data-back="rating">Change rating</button>
+      </section>
+
+      <!-- Thank you messages (shown after submit) -->
+      <div class="thank-you" id="thank-you-1-3">
+        <p>Thank you for your feedback. Our team will review this and follow up if needed.</p>
+      </div>
+      <div class="thank-you" id="thank-you-4">
+        <p>Thank you for taking the time to share this. We really appreciate it.</p>
+      </div>
+      <div class="thank-you" id="thank-you-5-yes">
+        <p>Thank you for your feedback and for considering sharing it with others. We really appreciate it.</p>
+      </div>
+      <div class="thank-you" id="thank-you-5-no">
+        <p>Thank you for your feedback.</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      var container = document.querySelector('.survey-container');
+      var stepRating = document.getElementById('step-rating');
+      var intro = document.querySelector('.intro');
+      var stars = document.querySelectorAll('.star');
+      var path13 = document.getElementById('path-1-3');
+      var path4 = document.getElementById('path-4');
+      var path5 = document.getElementById('path-5');
+      var thankYou13 = document.getElementById('thank-you-1-3');
+      var thankYou4 = document.getElementById('thank-you-4');
+      var thankYou5Yes = document.getElementById('thank-you-5-yes');
+      var thankYou5No = document.getElementById('thank-you-5-no');
+      var feedback13 = document.getElementById('feedback-1-3');
+      var feedback4 = document.getElementById('feedback-4');
+      var feedback5 = document.getElementById('feedback-5');
+
+      var selectedRating = 0;
+
+      function hideAllFeedback() {
+        path13.classList.remove('visible');
+        path4.classList.remove('visible');
+        path5.classList.remove('visible');
+        thankYou13.classList.remove('visible');
+        thankYou4.classList.remove('visible');
+        thankYou5Yes.classList.remove('visible');
+        thankYou5No.classList.remove('visible');
+      }
+
+      function showRatingStep() {
+        stepRating.classList.remove('hidden');
+        intro.classList.remove('hidden');
+        hideAllFeedback();
+        selectedRating = 0;
+        stars.forEach(function (s) {
+          s.classList.remove('active', 'filled');
+          s.setAttribute('aria-pressed', 'false');
+        });
+      }
+
+      function setStarsFilled(upTo) {
+        stars.forEach(function (s) {
+          var v = parseInt(s.getAttribute('data-value'), 10);
+          if (v <= upTo) {
+            s.classList.add('filled', 'active');
+            s.setAttribute('aria-pressed', 'true');
+          } else {
+            s.classList.remove('filled', 'active');
+            s.setAttribute('aria-pressed', 'false');
+          }
+        });
+      }
+
+      function setHoverFill(upTo) {
+        stars.forEach(function (s) {
+          var v = parseInt(s.getAttribute('data-value'), 10);
+          if (upTo > 0 && v <= upTo) {
+            s.classList.add('hover-fill');
+          } else {
+            s.classList.remove('hover-fill');
+          }
+        });
+      }
+
+      var starsWrap = document.querySelector('.stars-wrap');
+      starsWrap.addEventListener('mouseleave', function () {
+        setHoverFill(0);
+      });
+
+      stars.forEach(function (star) {
+        star.addEventListener('mouseenter', function () {
+          if (selectedRating === 0) {
+            var value = parseInt(star.getAttribute('data-value'), 10);
+            setHoverFill(value);
+          }
+        });
+        star.addEventListener('click', function () {
+          var value = parseInt(star.getAttribute('data-value'), 10);
+          selectedRating = value;
+          setStarsFilled(value);
+
+          stepRating.classList.add('hidden');
+          intro.classList.add('hidden');
+          hideAllFeedback();
+
+          if (value >= 1 && value <= 3) {
+            path13.classList.add('visible');
+          } else if (value === 4) {
+            path4.classList.add('visible');
+          } else {
+            path5.classList.add('visible');
+          }
+        });
+      });
+
+      document.querySelectorAll('.back-link').forEach(function (link) {
+        link.addEventListener('click', function () {
+          if (link.getAttribute('data-back') === 'rating') {
+            showRatingStep();
+          }
+        });
+      });
+
+      document.getElementById('submit-1-3').addEventListener('click', function () {
+        var val = (feedback13.value || '').trim();
+        if (!val) {
+          feedback13.focus();
+          feedback13.setAttribute('aria-invalid', 'true');
+          return;
+        }
+        feedback13.setAttribute('aria-invalid', 'false');
+        path13.classList.remove('visible');
+        thankYou13.classList.add('visible');
+        // HubSpot: submit feedback_recovery + rating (1-3)
+      });
+
+      document.getElementById('submit-4').addEventListener('click', function () {
+        path4.classList.remove('visible');
+        thankYou4.classList.add('visible');
+        // HubSpot: submit feedback_improvement + rating 4
+      });
+
+      document.getElementById('submit-5').addEventListener('click', function () {
+        var permissionRadio = document.querySelector('input[name="permission"]:checked');
+        var permission = permissionRadio ? permissionRadio.value : '';
+        path5.classList.remove('visible');
+        if (permission === 'yes') {
+          thankYou5Yes.classList.add('visible');
+        } else {
+          thankYou5No.classList.add('visible');
+        }
+        // HubSpot: submit feedback_testimonial + rating 5 + permission (yes/no)
+      });
+    })();
+  </script>
+</body>
+</html>
