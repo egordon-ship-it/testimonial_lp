@@ -1,5 +1,9 @@
 {
   "projects": {
+<<<<<<< HEAD
     "default": "dm-customer-testimonial"
+=======
+    "default": "testimonial-lp"
+>>>>>>> bfdb8fff388eeeb93c820519611f8b17fe588dde
   }
 }
