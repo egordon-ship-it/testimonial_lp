@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Your Feedback Matters | Dynamic Media Music</title>
+  <link rel="icon" href="/public/DM_icon_logo_512.png" type="image/png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet" />
@@ -31,19 +32,40 @@
     body {
       margin: 0;
       min-height: 100vh;
+      display: flex;
+      flex-direction: column;
       font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: var(--bg-page);
+      background: linear-gradient(180deg, #061a2d 0%, #0d2137 35%, #1a3a5c 70%, #2563eb 100%);
+      background-attachment: fixed;
       color: var(--text-primary);
       line-height: 1.5;
       -webkit-font-smoothing: antialiased;
     }
 
     .page {
-      min-height: 100vh;
+      flex: 1;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       padding: 2rem 1rem;
+      gap: 2rem;
+    }
+
+    .logo-header {
+      flex-shrink: 0;
+    }
+
+    .logo-header a {
+      display: block;
+      line-height: 0;
+    }
+
+    .logo-header img {
+      width: auto;
+      height: auto;
+      max-width: 200px;
+      object-fit: contain;
     }
 
     .survey-container {
@@ -295,10 +317,78 @@
     .intro.hidden {
       display: none;
     }
+
+    /* Footer */
+    .site-footer {
+      flex-shrink: 0;
+      width: 100%;
+      padding: 1rem 1.5rem;
+      text-align: center;
+      background: #2d3748;
+      box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2);
+    }
+
+    .site-footer .footer-inner {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem 0.75rem;
+      font-size: 0.8125rem;
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    .site-footer .footer-inner .footer-copyright {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .site-footer .footer-inner .footer-logo {
+      display: inline-block;
+      line-height: 0;
+      vertical-align: middle;
+      margin-right: 0.25rem;
+    }
+
+    .site-footer .footer-inner .footer-logo img {
+      height: 1.5em;
+      width: auto;
+      max-height: 14px;
+      vertical-align: middle;
+      opacity: 0.95;
+    }
+
+    .site-footer .footer-inner a {
+      color: #60a5fa;
+      text-decoration: none;
+    }
+
+    .site-footer .footer-inner a:hover {
+      text-decoration: underline;
+    }
+
+    .site-footer .footer-inner .sep {
+      color: rgba(255, 255, 255, 0.5);
+      user-select: none;
+    }
+
+    .site-footer .footer-bbb img {
+      height: 24px;
+      width: auto;
+      display: inline-block;
+      vertical-align: middle;
+      margin-left: 0.25rem;
+    }
   </style>
 </head>
 <body>
   <div class="page">
+    <header class="logo-header">
+      <a href="https://dynamicmediamusic.com" target="_blank" rel="noopener noreferrer" aria-label="Dynamic Media Music – Home">
+        <img src="/public/DM-Logo_White-2026.png" alt="Dynamic Media Music"/>
+      </a>
+    </header>
     <div class="survey-container">
       <!-- HubSpot: Add form embed or tracking script here if needed -->
 
@@ -370,6 +460,25 @@
       </div>
     </div>
   </div>
+
+  <footer class="site-footer">
+      <div class="footer-inner">
+        <span class="footer-copyright">
+          <a href="https://dynamicmediamusic.com" target="_blank" rel="noopener noreferrer" class="footer-logo" aria-hidden="true">
+            <img src="/public/DM-Logo_White-2026.png" alt="" />
+          </a>
+          <span>© 2026 Dynamic Media</span>
+        </span>
+        <span class="sep">|</span>
+        <a href="https://dynamicmediamusic.com/privacy">Privacy Policy</a>
+        <span class="sep">|</span>
+        <a href="https://dynamicmediamusic.com/terms">Terms and Conditions</a>
+        <span class="sep">|</span>
+        <span class="footer-bbb">
+          <img src="/public/bbb-logo-24.png" alt="BBB Accredited Business" />
+        </span>
+      </div>
+    </footer>
 
   <script>
     (function () {
