@@ -1,0 +1,10 @@
+{
+  "name": "testimonial-lp",
+  "private": true,
+  "description": "Testimonial survey landing page + HubSpot form submission",
+  "scripts": {
+    "build": "echo No build step — static HTML and Cloud Functions",
+    "serve": "firebase emulators:start --only hosting,functions",
+    "deploy": "firebase deploy --only hosting,functions"
+  }
+}

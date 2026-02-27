@@ -33,29 +33,48 @@ Colors are set with CSS variables at the top of the `<style>` block in `index.ht
 }
 ```
 
-## HubSpot Integration
+## Backend (Phase 1)
 
-- **Option A — HubSpot-hosted landing page:** Paste the HTML (or key sections) into a HubSpot landing page or custom HTML module. Create a form in HubSpot with fields for: star rating, feedback text, and (for 5-star) permission. Use HubSpot’s form API or hidden fields that your script populates before submit.
-- **Option B — External page with HubSpot form:** Host `index.html` on your domain. In the `survey-container` (see comment in HTML), add the HubSpot embed script and create the form with:
-  - Hidden: `rating` (1–5)
-  - Hidden: `path` (recovery | improvement | testimonial)
-  - Text: feedback (recovery required; improvement/testimonial optional)
-  - For testimonial path: `permission` (yes | no)
+The survey submits to a Firebase Function that proxies to the HubSpot Forms API so credentials stay server-side.
 
-Example embed (replace with your portal and form IDs):
+### Setup
 
-```html
-<script charset="utf-8" type="text/javascript" src="//js.hsforms.net/forms/v2.js"></script>
-<script>
-  hbspt.forms.create({
-    portalId: "YOUR_PORTAL_ID",
-    formId: "YOUR_FORM_ID",
-    target: "#hubspot-form-container"
-  });
-</script>
-```
+1. **HubSpot form**  
+   In HubSpot, create a form and add these **internal names** (you can set labels in HubSpot as you like):
+   - `star_rating` (number 1–5)
+   - `feedback_path` (recovery | improvement | testimonial)
+   - `feedback_text` (long text)
+   - `marketing_permission` (yes | no), only sent for the 5-star testimonial path
 
-Before calling form submit (or when showing thank-you), set hidden field values from the current rating, path, and permission choices so HubSpot receives the full survey data.
+2. **HubSpot private app**  
+   Create a private app with **Forms** scope, copy the **access token**, and note your **portal ID** and the form’s **form GUID** (from the form URL or API).
+
+3. **Environment variables**  
+   Set these for the Cloud Function (e.g. Firebase Console → Project → Functions → Environment variables, or `firebase functions:config:set` for legacy config):
+   - `HUBSPOT_PORTAL_ID` — your HubSpot portal ID
+   - `HUBSPOT_FORM_GUID` — the form GUID
+   - `HUBSPOT_ACCESS_TOKEN` — private app access token
+
+   For **local emulator** only, you can put the same vars in `functions/.env` (do not commit; `.env` is in `.gitignore`).
+
+4. **Deploy**  
+   From the project root: `npm install` in `functions/`, then `firebase deploy --only functions,hosting`. The hosting rewrite sends `/api/submit-survey` to the function.
+
+### Running locally
+
+- **Full stack (hosting + API):**  
+  `firebase emulators:start --only "hosting,functions"`  
+  Then open http://localhost:5050 for the survey (Emulator UI at http://localhost:4040). Use quotes around `hosting,functions` so PowerShell passes one argument. The functions emulator requires Node 20 (see `functions/package.json` engines). Set HubSpot env vars in `functions/.env` for local submit.
+
+- **Hosting only (UI only, submit will 503):**  
+  `firebase serve --only hosting`  
+  Use if you only need to test the survey UI. Submitting will show an error until the function is deployed or run via the emulator above.
+
+- If `firebase serve` (without `--only hosting`) fails with “An unexpected error has occurred,” use the emulators command instead. If you see "No emulators to start," run with the list in quotes: `--only "hosting,functions"` (required in PowerShell).
+
+## HubSpot Integration (reference)
+
+The backend sends one HubSpot form submission per survey submit with fields: `star_rating`, `feedback_path`, `feedback_text`, and (for 5-star) `marketing_permission`. No embed or client-side HubSpot script is required.
 
 ## Usage
 

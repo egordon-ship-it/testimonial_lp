@@ -1,21 +1,25 @@
 {
+  "functions": {
+    "source": "functions"
+  },
+  "emulators": {
+    "hosting": {
+      "port": 5050
+    },
+    "functions": {
+      "port": 5010
+    },
+    "ui": {
+      "enabled": true,
+      "port": 4040
+    }
+  },
   "hosting": {
     "public": ".",
-<<<<<<< HEAD
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
-    "rewrites": [{"source": "**", "destination": "/index.html"}]
-=======
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
     "rewrites": [
-      {
-        "source": "**",
-        "destination": "/index.html"
-      }
+      { "source": "/api/submit-survey", "function": "submitSurvey" },
+      { "source": "**", "destination": "/index.html" }
     ]
->>>>>>> bfdb8fff388eeeb93c820519611f8b17fe588dde
   }
 }
