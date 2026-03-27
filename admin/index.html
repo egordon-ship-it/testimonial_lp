@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Survey templates | Admin</title>
+  <link rel="icon" href="/public/DM_icon_logo_512.png" type="image/png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/admin/admin.css" />
+</head>
+<body class="admin-body admin-body--login" id="body-root">
+  <div id="view-login" class="admin-login">
+    <h1>Admin portal</h1>
+    <p class="admin-page-desc" style="margin:0 0 1.5rem;text-align:left;">Sign in with Google to manage survey templates, intro copy, and Google review links.</p>
+    <button type="button" class="admin-btn admin-btn--primary" id="btn-google-signin" style="width:100%;">Sign in with Google</button>
+    <p class="admin-login__note">Access is limited to addresses in ADMIN_EMAIL_ALLOWLIST (Cloud Functions env).</p>
+  </div>
+
+  <div id="view-app" class="admin-shell hidden">
+    <aside class="admin-sidebar" aria-label="Admin navigation">
+      <div class="admin-sidebar__brand">
+        <img src="/public/DM-Logo_White-2026.png" alt="Dynamic Media Music" />
+      </div>
+      <nav class="admin-sidebar__nav">
+        <a class="admin-nav__link" href="/admin/">Survey templates</a>
+        <a class="admin-nav__link" href="/" target="_blank" rel="noopener noreferrer">Open survey site</a>
+      </nav>
+      <div class="admin-sidebar__footer">
+        <button type="button" class="admin-btn-text" id="btn-signout">Sign out</button>
+      </div>
+    </aside>
+    <main class="admin-main">
+      <h1 class="admin-page-title">Survey templates</h1>
+      <p class="admin-page-desc">Create and duplicate templates. Links use <code style="font-family:var(--font-mono);color:var(--dm-blue);">?template=your-slug</code>. Submissions include <code style="font-family:var(--font-mono);color:var(--dm-blue);">survey_template_key</code> for HubSpot.</p>
+
+      <div id="admin-warning" class="admin-warning hidden"></div>
+
+      <div id="panel-list">
+        <div class="admin-toolbar">
+          <button type="button" class="admin-btn admin-btn--primary" id="btn-new-template">New template</button>
+        </div>
+        <div class="admin-table-wrap">
+          <table class="admin-table" aria-label="Survey templates">
+            <thead>
+              <tr>
+                <th>Slug</th>
+                <th>Name</th>
+                <th>Google URL</th>
+                <th>Updated</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="templates-tbody">
+              <tr><td colspan="5">Loading…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div id="panel-edit" class="hidden">
+        <div class="admin-toolbar">
+          <button type="button" class="admin-btn admin-btn--ghost" id="btn-back-list">Back to list</button>
+          <button type="button" class="admin-btn admin-btn--ghost" id="btn-preview" disabled>Preview</button>
+        </div>
+        <form class="admin-form" id="template-form">
+          <h2 id="form-title">Edit template</h2>
+          <div class="admin-field">
+            <label for="field-slug">Slug (URL key)</label>
+            <input class="admin-input" type="text" id="field-slug" name="slug" autocomplete="off" required pattern="[a-z0-9-]{1,64}" title="Lowercase letters, numbers, hyphens (1–64 chars)" />
+          </div>
+          <div class="admin-field">
+            <label for="field-name">Display name</label>
+            <input class="admin-input" type="text" id="field-name" name="name" required maxlength="200" />
+          </div>
+          <div class="admin-field">
+            <label for="field-intro-headline">Intro headline</label>
+            <input class="admin-input" type="text" id="field-intro-headline" name="introHeadline" maxlength="500" />
+          </div>
+          <div class="admin-field">
+            <label for="field-intro-body">Intro body</label>
+            <textarea id="field-intro-body" name="introBody" maxlength="2000"></textarea>
+          </div>
+          <div class="admin-field">
+            <label for="field-google-url">Google review URL (https)</label>
+            <input class="admin-input" type="url" id="field-google-url" name="googleReviewUrl" placeholder="https://g.page/..." maxlength="2048" />
+          </div>
+          <div class="admin-field">
+            <label for="field-thank-title">Thank-you modal title</label>
+            <input class="admin-input" type="text" id="field-thank-title" name="thankYouTitle" maxlength="300" />
+          </div>
+          <div class="admin-field">
+            <label for="field-thank-sub">Thank-you modal subtitle</label>
+            <textarea id="field-thank-sub" name="thankYouSubtitle" maxlength="500"></textarea>
+          </div>
+          <div class="admin-field">
+            <label for="field-thank-hint">Thank-you hint (under review box)</label>
+            <input class="admin-input" type="text" id="field-thank-hint" name="thankYouHint" maxlength="300" />
+          </div>
+          <div class="admin-form-actions">
+            <button type="submit" class="admin-btn admin-btn--primary" id="btn-save">Save</button>
+            <button type="button" class="admin-btn admin-btn--ghost hidden" id="btn-delete">Delete</button>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+
+  <div id="toast" class="admin-toast" role="status" aria-live="polite"></div>
+
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+  <script src="/admin/firebase-config.js"></script>
+  <script src="/admin/admin.js"></script>
+</body>
+</html>

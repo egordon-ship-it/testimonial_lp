@@ -2,12 +2,19 @@
   "functions": {
     "source": "functions"
   },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
   "emulators": {
     "hosting": {
       "port": 5050
     },
     "functions": {
       "port": 5010
+    },
+    "firestore": {
+      "port": 8080
     },
     "ui": {
       "enabled": true,
@@ -19,6 +26,10 @@
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
       { "source": "/api/submit-survey", "function": "submitSurvey" },
+      { "source": "/api/survey-config", "function": "getSurveyConfig" },
+      { "source": "/api/admin/survey-templates", "function": "adminSurveyTemplates" },
+      { "source": "/admin", "destination": "/admin/index.html" },
+      { "source": "/admin/", "destination": "/admin/index.html" },
       { "source": "**", "destination": "/index.html" }
     ]
   }

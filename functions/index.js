@@ -1,155 +1,234 @@
 /**
- * Phase 1: Backend proxy for testimonial survey → HubSpot Forms API.
- * Keeps HubSpot credentials server-side and validates payloads.
- * CommonJS for compatibility with firebase serve (legacy emulator).
+ * Survey backend: HubSpot submit, public survey config, admin CRUD (Firestore).
  */
 
+const admin = require("firebase-admin");
 const { onRequest } = require("firebase-functions/v2/https");
 
-const HUBSPOT_SUBMIT_URL = "https://api.hsforms.com/submissions/v3/integration/secure/submit";
+const { applyCors, handleOptions } = require("./lib/cors");
+const { HUBSPOT_SUBMIT_URL, getHubSpotConfig, buildHubSpotFields } = require("./lib/hubspot");
+const { validatePayload } = require("./lib/surveyPayload");
+const { isValidSlug, normalizeSlug } = require("./lib/slug");
+const templatesStore = require("./lib/templatesStore");
 
-function getHubSpotConfig() {
-  const portalId = process.env.HUBSPOT_PORTAL_ID;
-  const formGuid = process.env.HUBSPOT_FORM_GUID;
-  const accessToken = process.env.HUBSPOT_ACCESS_TOKEN;
-  if (!portalId || !formGuid || !accessToken) {
+if (!admin.apps.length) {
+  admin.initializeApp();
+}
+
+async function requireAdmin(req, res) {
+  const authHeader = req.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    res.status(401).json({ error: "Unauthorized" });
     return null;
   }
-  return { portalId, formGuid, accessToken };
+  const token = authHeader.slice(7);
+  try {
+    const decoded = await admin.auth().verifyIdToken(token);
+    const email = decoded.email || "";
+    const allowRaw = process.env.ADMIN_EMAIL_ALLOWLIST || "";
+    const set = allowRaw
+      .split(",")
+      .map((s) => s.trim().toLowerCase())
+      .filter(Boolean);
+    if (!set.length) {
+      console.warn("ADMIN_EMAIL_ALLOWLIST empty; denying admin access");
+      res.status(403).json({ error: "Admin access not configured" });
+      return null;
+    }
+    if (!email || !set.includes(email.toLowerCase())) {
+      res.status(403).json({ error: "Forbidden" });
+      return null;
+    }
+    return { email, uid: decoded.uid };
+  } catch (e) {
+    res.status(401).json({ error: "Invalid token" });
+    return null;
+  }
 }
 
-/**
- * Build HubSpot form fields array from our survey payload.
- * Map to whatever field names you create in your HubSpot form.
- * feedback_title is required by HubSpot for Customer Feedback records.
- */
-function buildHubSpotFields(payload) {
-  const { rating, path, feedback, permission, feedback_title: titleFromPayload, email, contact_id } = payload;
-  const feedbackTitle =
-    titleFromPayload && String(titleFromPayload).trim()
-      ? String(titleFromPayload).trim()
-      : `Survey – ${path} – ${rating} star${rating !== 1 ? "s" : ""}`;
-  const fields = [
-    { name: "feedback_title", value: feedbackTitle },
-    { name: "star_rating", value: String(rating) },
-    { name: "feedback_path", value: path },
-    { name: "feedback_text", value: feedback || "" },
-  ];
-  if (email) {
-    fields.push({ name: "email", value: email });
+const submitSurvey = onRequest({ cors: false, invoker: "public" }, async (req, res) => {
+  applyCors(req, res);
+  if (handleOptions(req, res)) return;
+  if (req.method !== "POST") {
+    res.status(405).json({ error: "Method not allowed" });
+    return;
   }
-  if (contact_id) {
-    fields.push({ name: "contact_id", value: contact_id });
+
+  const validation = validatePayload(req.body);
+  if (!validation.ok) {
+    res.status(400).json({ error: validation.error });
+    return;
   }
-  if (path === "testimonial" && permission != null) {
-    fields.push({ name: "marketing_permission", value: permission });
-  }
-  return fields;
-}
 
-/**
- * Validate incoming survey payload.
- */
-function validatePayload(body) {
-  if (!body || typeof body !== "object") return { ok: false, error: "Missing body" };
-  const rating = body.rating;
-  const path = body.path;
-  if (rating == null || path == null) {
-    return { ok: false, error: "Missing rating or path" };
-  }
-  const r = Number(rating);
-  if (!Number.isInteger(r) || r < 1 || r > 5) {
-    return { ok: false, error: "Invalid rating" };
-  }
-  const validPaths = ["recovery", "improvement", "testimonial"];
-  if (!validPaths.includes(path)) {
-    return { ok: false, error: "Invalid path" };
-  }
-  const feedback = body.feedback != null ? String(body.feedback).trim() : "";
-  const permission = body.permission != null ? String(body.permission) : null;
-  if (path === "testimonial" && permission != null && !["yes", "no"].includes(permission)) {
-    return { ok: false, error: "Invalid permission" };
-  }
-  const feedback_title = body.feedback_title != null ? String(body.feedback_title).trim() : undefined;
-  const email = body.email != null ? String(body.email).trim() : undefined;
-  if (email !== undefined && email !== "") {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return { ok: false, error: "Invalid email" };
-    }
-  }
-  const contact_id = body.contact_id != null ? String(body.contact_id).trim() : (body.contactId != null ? String(body.contactId).trim() : undefined);
-  return {
-    ok: true,
-    payload: { rating: r, path, feedback, permission: permission || undefined, feedback_title, email: email || undefined, contact_id: contact_id || undefined },
-  };
-}
-
-/**
- * POST /api/submit-survey
- * Body: { rating: 1-5, path: "recovery"|"improvement"|"testimonial", feedback?: string, permission?: "yes"|"no", feedback_title?: string, email?: string, contact_id?: string }
- */
-const submitSurvey = onRequest(
-  { cors: false },
-  async (req, res) => {
-    if (req.method !== "POST") {
-      res.status(405).json({ error: "Method not allowed" });
-      return;
-    }
-
-    const validation = validatePayload(req.body);
-    if (!validation.ok) {
-      res.status(400).json({ error: validation.error });
-      return;
-    }
-
-    const config = getHubSpotConfig();
-    if (!config) {
-      if (process.env.FUNCTIONS_EMULATOR === "true") {
-        console.log("[demo] Survey submitted (HubSpot not configured):", JSON.stringify(validation.payload));
-        res.status(200).json({ success: true });
-        return;
-      }
-      console.error("HubSpot config missing: HUBSPOT_PORTAL_ID, HUBSPOT_FORM_GUID, HUBSPOT_ACCESS_TOKEN");
-      res.status(503).json({ error: "Survey submission is not configured" });
-      return;
-    }
-
-    const { portalId, formGuid, accessToken } = config;
-    const fields = buildHubSpotFields(validation.payload);
-    const submitBody = {
-      fields,
-      submittedAt: Date.now(),
-      context: {
-        pageUri: req.body.pageUri || "",
-        pageName: req.body.pageName || "Testimonial Survey",
-      },
-    };
-
-    const url = `${HUBSPOT_SUBMIT_URL}/${portalId}/${formGuid}`;
-    try {
-      const hubRes = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify(submitBody),
-      });
-
-      if (!hubRes.ok) {
-        const text = await hubRes.text();
-        console.error("HubSpot submit failed", hubRes.status, text);
-        res.status(502).json({ error: "Failed to submit to HubSpot" });
-        return;
-      }
-
+  const config = getHubSpotConfig();
+  if (!config) {
+    if (process.env.FUNCTIONS_EMULATOR === "true") {
+      console.log("[demo] Survey submitted (HubSpot not configured):", JSON.stringify(validation.payload));
       res.status(200).json({ success: true });
-    } catch (err) {
-      console.error("HubSpot request error", err);
-      res.status(502).json({ error: "Failed to submit to HubSpot" });
+      return;
     }
+    console.error("HubSpot config missing: HUBSPOT_PORTAL_ID, HUBSPOT_FORM_GUID, HUBSPOT_ACCESS_TOKEN");
+    res.status(503).json({ error: "Survey submission is not configured" });
+    return;
   }
-);
+
+  const { portalId, formGuid, accessToken } = config;
+  const fields = buildHubSpotFields(validation.payload);
+  const submitBody = {
+    fields,
+    submittedAt: Date.now(),
+    context: {
+      pageUri: req.body.pageUri || "",
+      pageName: req.body.pageName || "Testimonial Survey",
+    },
+  };
+
+  const url = `${HUBSPOT_SUBMIT_URL}/${portalId}/${formGuid}`;
+  try {
+    const hubRes = await fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`,
+      },
+      body: JSON.stringify(submitBody),
+    });
+
+    if (!hubRes.ok) {
+      const text = await hubRes.text();
+      console.error("HubSpot submit failed", hubRes.status, text);
+      res.status(502).json({ error: "Failed to submit to HubSpot" });
+      return;
+    }
+
+    res.status(200).json({ success: true });
+  } catch (err) {
+    console.error("HubSpot request error", err);
+    res.status(502).json({ error: "Failed to submit to HubSpot" });
+  }
+});
+
+const getSurveyConfig = onRequest({ cors: false, invoker: "public" }, async (req, res) => {
+  applyCors(req, res);
+  if (handleOptions(req, res)) return;
+  if (req.method !== "GET") {
+    res.status(405).json({ error: "Method not allowed" });
+    return;
+  }
+
+  const templateParam = req.query.template != null ? String(req.query.template) : "default";
+  const slug = normalizeSlug(templateParam) || "default";
+
+  if (!isValidSlug(slug)) {
+    res.status(400).json({ error: "Invalid template parameter" });
+    return;
+  }
+
+  try {
+    const template = await templatesStore.getTemplateBySlug(slug);
+    if (!template) {
+      res.status(404).json({ error: "not_found", slug });
+      return;
+    }
+    res.set("Cache-Control", "public, max-age=60");
+    res.status(200).json({
+      slug: template.slug,
+      survey_template_key: template.slug,
+      introHeadline: template.introHeadline,
+      introBody: template.introBody,
+      googleReviewUrl: template.googleReviewUrl,
+      thankYouTitle: template.thankYouTitle,
+      thankYouSubtitle: template.thankYouSubtitle,
+      thankYouHint: template.thankYouHint,
+    });
+  } catch (err) {
+    console.error("getSurveyConfig", err);
+    res.status(500).json({ error: "Failed to load survey config" });
+  }
+});
+
+const adminSurveyTemplates = onRequest({ cors: false, invoker: "public" }, async (req, res) => {
+  applyCors(req, res);
+  if (handleOptions(req, res)) return;
+
+  const user = await requireAdmin(req, res);
+  if (!user) return;
+
+  try {
+    if (req.method === "GET") {
+      const slug = req.query.slug != null ? String(req.query.slug).trim() : "";
+      if (slug) {
+        if (!isValidSlug(normalizeSlug(slug))) {
+          res.status(400).json({ error: "Invalid slug" });
+          return;
+        }
+        const t = await templatesStore.getTemplateBySlug(slug);
+        if (!t) {
+          res.status(404).json({ error: "not_found" });
+          return;
+        }
+        res.status(200).json(t);
+        return;
+      }
+      const list = await templatesStore.listTemplates();
+      res.status(200).json({ templates: list });
+      return;
+    }
+
+    if (req.method === "POST") {
+      const body = req.body || {};
+      if (body.action === "duplicate") {
+        const fromSlug = body.fromSlug != null ? String(body.fromSlug) : "";
+        const newSlug = body.newSlug != null ? String(body.newSlug) : "";
+        const newName = body.newName != null ? String(body.newName) : "";
+        const result = await templatesStore.duplicateTemplate(fromSlug, newSlug, newName, user.email);
+        if (!result.ok) {
+          res.status(result.status).json({ error: result.error });
+          return;
+        }
+        res.status(201).json(result.template);
+        return;
+      }
+      const slug = body.slug != null ? String(body.slug) : "";
+      const result = await templatesStore.createTemplate(slug, body, user.email);
+      if (!result.ok) {
+        res.status(result.status).json({ error: result.error });
+        return;
+      }
+      res.status(201).json(result.template);
+      return;
+    }
+
+    if (req.method === "PUT") {
+      const body = req.body || {};
+      const slug = body.slug != null ? String(body.slug) : "";
+      const result = await templatesStore.updateTemplate(slug, body, user.email);
+      if (!result.ok) {
+        res.status(result.status).json({ error: result.error });
+        return;
+      }
+      res.status(200).json(result.template);
+      return;
+    }
+
+    if (req.method === "DELETE") {
+      const slug = req.query.slug != null ? String(req.query.slug) : "";
+      const result = await templatesStore.deleteTemplate(slug);
+      if (!result.ok) {
+        res.status(result.status).json({ error: result.error });
+        return;
+      }
+      res.status(204).send("");
+      return;
+    }
+
+    res.status(405).json({ error: "Method not allowed" });
+  } catch (err) {
+    console.error("adminSurveyTemplates", err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 
 exports.submitSurvey = submitSurvey;
+exports.getSurveyConfig = getSurveyConfig;
+exports.adminSurveyTemplates = adminSurveyTemplates;

@@ -7,22 +7,59 @@
   <link rel="icon" href="/public/DM_icon_logo_512.png" type="image/png" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
   <style>
-    /* --- Brand colors (customize from dynamicmediamusic.com) --- */
+    /* DM Brand Style System — tokens from doc/DM-brand-style-system.md */
     :root {
-      --brand-primary: #0d2137;
-      --brand-primary-light: #1a3a5c;
-      --brand-accent: #2563eb;
-      --brand-accent-hover: #1d4ed8;
-      --text-primary: #0f172a;
-      --text-muted: #475569;
-      --bg-page: #f8fafc;
-      --bg-card: #ffffff;
-      --border-color: #e2e8f0;
-      --radius: 12px;
-      --shadow: 0 4px 24px rgba(13, 33, 55, 0.08);
-      --transition: 0.25s ease;
+      --dm-blue: #00aeef;
+      --dm-blue-hover: #0099d6;
+      --dm-blue-active: #007bad;
+      --dm-blue-glow: rgba(0, 174, 239, 0.15);
+      --dm-blue-border: rgba(0, 174, 239, 0.3);
+      --bg-primary: #0d1117;
+      --bg-secondary: #121820;
+      --bg-card: #1a2332;
+      --bg-input: #0f1923;
+      --bg-darkest: #080e14;
+      --bg-proof: #0a0f15;
+      --border: #1e2d3d;
+      --border-active: #2a3f56;
+      --text-primary: #ffffff;
+      --text-secondary: #b0bec5;
+      --text-muted: #607080;
+      --text-accent: #00aeef;
+      --success: #00e676;
+      --warning: #f5a623;
+      --error: #ff5252;
+      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-mono: 'JetBrains Mono', 'Courier New', monospace;
+      --font-weight-normal: 400;
+      --font-weight-medium: 500;
+      --font-weight-semibold: 600;
+      --font-weight-bold: 700;
+      --leading-tight: 1.15;
+      --leading-snug: 1.3;
+      --leading-normal: 1.5;
+      --leading-body: 1.7;
+      --leading-loose: 1.9;
+      --lc-bg-white: #ffffff;
+      --lc-bg-soft: #f3f4f6;
+      --lc-bg-mid: #e5e7eb;
+      --lc-text-primary: #1a2b3c;
+      --lc-text-body: #3d4f5c;
+      --lc-text-muted: #5c6b7a;
+      --lc-border: #cfd8dc;
+      --lc-card-white: #f3f4f6;
+      --lc-card-mid: #ffffff;
+      --radius: 6px;
+      --t-fast: 0.15s ease;
+      --t-base: 0.2s ease;
+      --t-slow: 0.3s ease;
+      --space-4: 16px;
+      --space-6: 32px;
+      --space-7: 48px;
+      --space-9: 96px;
+      --breakpoint-md: 768px;
     }
 
     * {
@@ -34,11 +71,12 @@
       min-height: 100vh;
       display: flex;
       flex-direction: column;
-      font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      background: linear-gradient(180deg, #061a2d 0%, #0d2137 35%, #1a3a5c 70%, #2563eb 100%);
+      font-family: var(--font-sans);
+      font-weight: var(--font-weight-normal);
+      background: linear-gradient(180deg, var(--bg-primary) 0%, var(--dm-blue) 100%);
       background-attachment: fixed;
-      color: var(--text-primary);
-      line-height: 1.5;
+      color: var(--text-secondary);
+      line-height: var(--leading-body);
       -webkit-font-smoothing: antialiased;
     }
 
@@ -48,8 +86,14 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      padding: 2rem 1rem;
-      gap: 2rem;
+      padding: var(--space-7) var(--space-4);
+      gap: var(--space-6);
+    }
+
+    @media (min-width: 768px) {
+      .page {
+        padding: var(--space-9) var(--space-6);
+      }
     }
 
     .logo-header {
@@ -70,47 +114,72 @@
 
     .survey-container {
       width: 100%;
-      max-width: 520px;
-      background: var(--bg-card);
+      max-width: 660px;
+      background: var(--lc-bg-white);
+      border: 1px solid var(--lc-border);
       border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      padding: 2.5rem 2rem;
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+      padding: var(--space-6) var(--space-4);
       position: relative;
     }
 
-    /* Intro (headline + subhead) */
+    @media (min-width: 768px) {
+      .survey-container {
+        padding: 2.5rem var(--space-6);
+      }
+    }
+
+    /* Intro (headline + subhead) — Light Canvas tokens */
     .intro {
       text-align: center;
-      margin-bottom: 2rem;
+      margin-bottom: var(--space-6);
     }
 
     .intro h1 {
       margin: 0 0 0.75rem;
-      font-size: 1.75rem;
-      font-weight: 700;
-      color: var(--brand-primary);
+      font-size: 2.2rem;
+      font-weight: var(--font-weight-bold);
+      line-height: var(--leading-snug);
+      color: var(--lc-text-primary);
     }
 
     .intro p {
       margin: 0;
       font-size: 1rem;
-      color: var(--text-muted);
-      max-width: 42ch;
+      font-weight: var(--font-weight-normal);
+      line-height: var(--leading-body);
+      color: var(--lc-text-body);
+      max-width: 50ch;
       margin-left: auto;
       margin-right: auto;
     }
 
-    /* Rating step: "How did we do today?" + stars */
+    /* Rating step: "How did we do today?" + stars (Lucide-style stroke) */
     .step-rating {
       text-align: center;
       padding: 1rem 0;
     }
 
     .step-rating h2 {
-      margin: 0 0 1.5rem;
+      margin: 0 0 0rem;
       font-size: 1.25rem;
-      font-weight: 600;
-      color: var(--text-primary);
+      font-weight: var(--font-weight-semibold);
+      line-height: var(--leading-normal);
+      color: var(--lc-text-primary);
+    }
+
+    @media (min-width: 768px) {
+      .step-rating h2 {
+        font-size: 1.5rem;
+      }
+    }
+
+    .step-rating__lead {
+      margin-bottom: 1.5rem;
+      margin-top: 0px;
+      color: var(--lc-text-body);
+      font-size: 1rem;
+      line-height: var(--leading-body);
     }
 
     .stars-wrap {
@@ -127,32 +196,46 @@
       background: none;
       cursor: pointer;
       padding: 0;
-      transition: transform var(--transition);
-    }
-
-    .star:hover {
-      transform: scale(1.1);
+      color: var(--lc-text-muted);
+      transition: color var(--t-base);
     }
 
     .star svg {
       width: 100%;
       height: 100%;
-      fill: var(--border-color);
-      transition: fill var(--transition);
+      display: block;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      transition: fill var(--t-base), stroke var(--t-base);
+    }
+
+    .star:hover,
+    .star:focus-visible {
+      color: var(--warning);
+    }
+
+    .star:focus-visible {
+      outline: 2px solid var(--dm-blue);
+      outline-offset: 2px;
+      border-radius: var(--radius);
     }
 
     .star:hover svg,
     .star.active svg,
     .star.filled svg,
     .star.hover-fill svg {
-      fill: #f59e0b;
+      fill: var(--warning);
+      stroke: var(--warning);
     }
 
     /* Feedback step (conditional content) */
     .step-feedback {
       display: none;
       text-align: left;
-      animation: fadeIn 0.35s ease;
+      animation: fadeIn 0.3s ease;
     }
 
     .step-feedback.visible {
@@ -160,21 +243,29 @@
     }
 
     @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
+      from { opacity: 0; transform: translateY(6px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
     .step-feedback h3 {
       margin: 0 0 0.5rem;
-      font-size: 1.125rem;
-      font-weight: 600;
-      color: var(--brand-primary);
+      font-size: 1.25rem;
+      font-weight: var(--font-weight-semibold);
+      line-height: var(--leading-normal);
+      color: var(--lc-text-primary);
+    }
+
+    @media (min-width: 768px) {
+      .step-feedback h3 {
+        font-size: 1.5rem;
+      }
     }
 
     .step-feedback .copy {
       margin-bottom: 1.25rem;
-      color: var(--text-muted);
-      font-size: 0.9375rem;
+      color: var(--lc-text-body);
+      font-size: 1rem;
+      line-height: var(--leading-body);
     }
 
     .step-feedback textarea {
@@ -183,26 +274,29 @@
       padding: 0.75rem 1rem;
       font-family: inherit;
       font-size: 1rem;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
+      line-height: var(--leading-body);
+      color: var(--lc-text-body);
+      background: var(--lc-bg-white);
+      border: 1px solid var(--lc-border);
+      border-radius: var(--radius);
       resize: vertical;
       margin-bottom: 0rem;
-      transition: border-color var(--transition), box-shadow var(--transition);
+      transition: border-color var(--t-base), box-shadow var(--t-base);
     }
 
     .step-feedback textarea:focus {
       outline: none;
-      border-color: var(--brand-accent);
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+      border-color: var(--dm-blue);
+      box-shadow: 0 0 0 3px var(--dm-blue-glow);
     }
 
     .step-feedback textarea::placeholder {
-      color: #94a3b8;
+      color: var(--lc-text-muted);
     }
 
     .step-feedback .required-label {
       font-size: 0.8125rem;
-      color: var(--text-muted);
+      color: var(--lc-text-muted);
       margin-top: -0.5rem;
       margin-bottom: 1rem;
     }
@@ -211,14 +305,15 @@
     .permission-wrap {
       margin-top: 1.25rem;
       margin-bottom: 1.5rem;
-      padding-top: 1.25rem;
-      border-top: 1px solid var(--border-color);
+      padding-top: 0.25rem;
+      border-top: 0px solid var(--lc-border);
     }
 
     .permission-wrap p {
       margin: 0 0 1.25rem;
-      font-size: 0.9375rem;
-      color: var(--text-primary);
+      font-size: 1rem;
+      line-height: var(--leading-body);
+      color: var(--lc-text-primary);
     }
 
     .permission-options {
@@ -233,13 +328,46 @@
       align-items: center;
       gap: 0.5rem;
       cursor: pointer;
-      font-size: 0.9375rem;
+      font-size: 1rem;
+      color: var(--lc-text-body);
     }
 
     .permission-options input[type="checkbox"] {
+      appearance: none;
+      -webkit-appearance: none;
       width: 18px;
       height: 18px;
-      accent-color: var(--brand-accent);
+      margin: 0;
+      flex-shrink: 0;
+      border: 1px solid var(--lc-border);
+      border-radius: var(--radius);
+      background: var(--lc-bg-white);
+      cursor: pointer;
+      position: relative;
+      vertical-align: middle;
+    }
+
+    .permission-options input[type="checkbox"]:checked {
+      background: var(--dm-blue);
+      border-color: var(--dm-blue);
+    }
+
+    /* White checkmark on DM blue (native accent-color cannot force white tick) */
+    .permission-options input[type="checkbox"]:checked::after {
+      content: '';
+      position: absolute;
+      left: 5px;
+      top: 1px;
+      width: 4px;
+      height: 9px;
+      border: solid #ffffff;
+      border-width: 0 2px 2px 0;
+      transform: rotate(45deg);
+    }
+
+    .permission-options input[type="checkbox"]:focus-visible {
+      outline: 2px solid var(--dm-blue);
+      outline-offset: 2px;
     }
 
     /* Buttons */
@@ -248,26 +376,27 @@
       padding: 0.75rem 1.5rem;
       font-family: inherit;
       font-size: 1rem;
-      font-weight: 600;
+      font-weight: var(--font-weight-semibold);
       border: none;
-      border-radius: 8px;
+      border-radius: var(--radius);
       cursor: pointer;
-      transition: background-color var(--transition), transform 0.15s ease;
-    }
-
-    .btn:active {
-      transform: scale(0.98);
+      transition: background-color var(--t-base), box-shadow var(--t-fast);
     }
 
     .btn-primary {
-      background: var(--brand-accent);
+      background: var(--dm-blue);
       color: #fff;
       width: 100%;
+      min-width: 180px;
       margin-top: 0;
     }
 
     .btn-primary:hover {
-      background: var(--brand-accent-hover);
+      background: var(--dm-blue-hover);
+    }
+
+    .btn-primary:active {
+      background: var(--dm-blue-active);
     }
 
     .btn-primary:disabled {
@@ -280,7 +409,7 @@
       display: none;
       text-align: center;
       padding: 1.5rem 0;
-      animation: fadeIn 0.35s ease;
+      animation: fadeIn 0.3s ease;
     }
 
     .thank-you.visible {
@@ -289,8 +418,9 @@
 
     .thank-you p {
       margin: 0;
-      font-size: 1.0625rem;
-      color: var(--text-primary);
+      font-size: 1rem;
+      line-height: var(--leading-body);
+      color: var(--lc-text-primary);
     }
 
     /* Back link (optional) */
@@ -298,7 +428,7 @@
       display: inline-block;
       margin-top: 1.25rem;
       font-size: 0.875rem;
-      color: var(--brand-accent);
+      color: var(--dm-blue);
       text-decoration: none;
       background: none;
       border: none;
@@ -309,12 +439,13 @@
 
     .back-link:hover {
       text-decoration: underline;
+      color: var(--dm-blue-hover);
     }
 
     /* Hide rating step after selection */
     .submit-error {
       font-size: 0.875rem;
-      color: #dc2626;
+      color: var(--error);
       margin: 0.5rem 0 0;
     }
     .submit-error.hidden {
@@ -328,14 +459,20 @@
       display: none;
     }
 
-    /* Footer */
+    /* Footer — dark palette */
     .site-footer {
       flex-shrink: 0;
       width: 100%;
-      padding: 1rem 1.5rem;
+      padding: var(--space-4);
       text-align: center;
-      background: #2d3748;
-      box-shadow: 0 -1px 0 rgba(0, 0, 0, 0.2);
+      background: var(--bg-secondary);
+      border-top: 1px solid var(--border);
+    }
+
+    @media (min-width: 768px) {
+      .site-footer {
+        padding: var(--space-4) var(--space-6);
+      }
     }
 
     .site-footer .footer-inner {
@@ -345,7 +482,8 @@
       justify-content: center;
       gap: 0.5rem 0.75rem;
       font-size: 0.8125rem;
-      color: rgba(255, 255, 255, 0.9);
+      line-height: var(--leading-normal);
+      color: var(--text-secondary);
     }
 
     .site-footer .footer-inner .footer-copyright {
@@ -370,16 +508,18 @@
     }
 
     .site-footer .footer-inner a {
-      color: #60a5fa;
+      color: var(--dm-blue);
       text-decoration: none;
+      transition: color var(--t-base);
     }
 
     .site-footer .footer-inner a:hover {
       text-decoration: underline;
+      color: var(--dm-blue-hover);
     }
 
     .site-footer .footer-inner .sep {
-      color: rgba(255, 255, 255, 0.5);
+      color: var(--text-muted);
       user-select: none;
     }
 
@@ -389,6 +529,219 @@
       display: inline-block;
       vertical-align: middle;
       margin-left: 0.25rem;
+    }
+
+    /* Thank-you modal (5-star → Google review) */
+    .thank-you-modal[hidden] {
+      display: none !important;
+    }
+
+    .thank-you-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: var(--space-4);
+      background: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+    }
+
+    .thank-you-modal__dialog {
+      width: 90%;
+      max-width: 560px;
+      max-height: min(90vh, 640px);
+      overflow: auto;
+      background: var(--lc-bg-white);
+      border: 1px solid var(--lc-border);
+      border-radius: var(--radius);
+      box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+      padding: var(--space-6) var(--space-4);
+      position: relative;
+      animation: fadeIn var(--t-slow) ease;
+    }
+
+    @media (min-width: 768px) {
+      .thank-you-modal__dialog {
+        padding: 2rem var(--space-6);
+      }
+    }
+
+    .thank-you-modal__header {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+    }
+
+    .thank-you-modal__success-icon {
+      flex-shrink: 0;
+      width: 55px;
+      height: 55px;
+      border-radius: 50%;
+      background: var(--dm-blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .thank-you-modal__success-icon svg {
+      width: 30px;
+      height: 30px;
+      display: block;
+    }
+
+    .thank-you-modal__success-icon svg path {
+      stroke: #ffffff;
+    }
+
+    .thank-you-modal__titles {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .thank-you-modal__title {
+      margin: 0;
+      font-size: 1.0625rem;
+      font-weight: var(--font-weight-bold);
+      color: var(--lc-text-primary);
+      line-height: var(--leading-snug);
+    }
+
+    .thank-you-modal__subtitle {
+      margin: 0;
+      font-size: 0.875rem;
+      color: var(--lc-text-body);
+      line-height: var(--leading-body);
+    }
+
+    .thank-you-modal__close {
+      flex-shrink: 0;
+      margin-left: auto;
+      width: 2rem;
+      height: 2rem;
+      border: none;
+      background: transparent;
+      color: var(--lc-text-muted);
+      font-size: 1.5rem;
+      line-height: 1;
+      cursor: pointer;
+      border-radius: var(--radius);
+      transition: background var(--t-base), color var(--t-base);
+    }
+
+    .thank-you-modal__close:hover {
+      background: var(--lc-bg-soft);
+      color: var(--lc-text-primary);
+    }
+
+    .thank-you-modal__body {
+      border-top: 1px solid var(--lc-border);
+      padding-top: 1.25rem;
+      margin-top: 1rem;
+    }
+
+    .thank-you-modal__label {
+      display: block;
+      margin: 0 0 0.5rem;
+      font-size: 0.875rem;
+      font-weight: var(--font-weight-semibold);
+      color: var(--lc-text-primary);
+    }
+
+    .thank-you-modal__review {
+      margin: 0;
+      padding: 0.75rem 0.875rem;
+      min-height: 3.5rem;
+      font-size: 0.9375rem;
+      line-height: var(--leading-body);
+      color: var(--lc-text-body);
+      background: var(--lc-card-white);
+      border: 1px solid var(--lc-border);
+      border-radius: var(--radius);
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .thank-you-modal__review:empty::before {
+      content: '(No text provided)';
+      color: var(--lc-text-muted);
+    }
+
+    .thank-you-modal__hint {
+      margin: 0.75rem 0 0;
+      font-size: 0.8125rem;
+      color: var(--lc-text-muted);
+      line-height: var(--leading-body);
+    }
+
+    .thank-you-modal__actions {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      margin-top: 0.75rem;
+    }
+
+    .thank-you-modal .btn-copy {
+      background: transparent;
+      color: var(--lc-text-primary);
+      border: 1px solid var(--lc-text-primary);
+      width: 100%;
+      min-width: 180px;
+    }
+
+    .thank-you-modal .btn-copy:hover {
+      background: var(--lc-bg-soft);
+    }
+
+    .thank-you-modal .btn-google {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      background: var(--dm-blue);
+      color: #fff;
+      width: 100%;
+      border: none;
+      margin-top: 0.5rem;
+    }
+
+    .thank-you-modal .btn-google:hover {
+      background: #1557b0;
+    }
+
+    .thank-you-modal .btn-google__icon {
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 0;
+    }
+
+    .thank-you-modal .btn-google__icon svg {
+      width: 18px;
+      height: 18px;
+      display: block;
+    }
+
+    .thank-you-modal__copy-status {
+      min-height: 0;
+      margin: 0.25rem 0 0;
+      font-size: 0.8125rem;
+      color: var(--success);
+      text-align: center;
+      opacity: 0;
+      transition: opacity var(--t-base);
+    }
+
+    .thank-you-modal__copy-status.visible {
+      opacity: 1;
+      min-height: 1.25rem;
     }
   </style>
 </head>
@@ -403,20 +756,20 @@
       <!-- HubSpot: Add form embed or tracking script here if needed -->
 
       <header class="intro">
-        <h1>Your feedback matters.</h1>
-        <p>Please take a moment to rate your recent support experience. This survey is optional and takes about a minute.</p>
+        <h1 id="intro-headline">Your feedback matters.</h1>
+        <p id="intro-body">Please take a moment to rate your recent support experience. This survey is optional and takes about a minute.</p>
       </header>
 
       <!-- Step 1: Star rating -->
       <section class="step-rating" id="step-rating" aria-label="Rate your experience">
         <h2>How did we do today?</h2>
-        <p class="copy" style="margin-bottom:1rem; color:var(--text-muted); font-size:0.9375rem;">How was your experience with our support today?</p>
+        <p class="step-rating__lead">How was your experience with our support today?</p>
         <div class="stars-wrap" role="group" aria-label="Rate 1 to 5 stars">
-          <button type="button" class="star" data-value="1" aria-label="1 star"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
-          <button type="button" class="star" data-value="2" aria-label="2 stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
-          <button type="button" class="star" data-value="3" aria-label="3 stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
-          <button type="button" class="star" data-value="4" aria-label="4 stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
-          <button type="button" class="star" data-value="5" aria-label="5 stars"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg></button>
+          <button type="button" class="star" data-value="1" aria-label="1 star"><svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>
+          <button type="button" class="star" data-value="2" aria-label="2 stars"><svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>
+          <button type="button" class="star" data-value="3" aria-label="3 stars"><svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>
+          <button type="button" class="star" data-value="4" aria-label="4 stars"><svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>
+          <button type="button" class="star" data-value="5" aria-label="5 stars"><svg viewBox="0 0 24 24" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>
         </div>
       </section>
 
@@ -464,11 +817,56 @@
       <div class="thank-you" id="thank-you-4">
         <p>Thank you for taking the time to share this. We really appreciate it.</p>
       </div>
-      <div class="thank-you" id="thank-you-5-yes">
-        <p>Thank you for your feedback and for considering sharing it with others. We really appreciate it.</p>
+    </div>
+  </div>
+
+  <!-- 5-star thank-you: set data-google-review-url to your Google Business “Get more reviews” link -->
+  <div
+    id="thank-you-google-modal"
+    class="thank-you-modal"
+    hidden
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="thank-you-google-title"
+    data-google-review-url=""
+  >
+    <div class="thank-you-modal__dialog">
+      <div class="thank-you-modal__header">
+        <div class="thank-you-modal__success-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M20 6L9 17l-5-5" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <div class="thank-you-modal__titles">
+          <p class="thank-you-modal__title" id="thank-you-google-title">Thank you for your feedback!</p>
+          <p class="thank-you-modal__subtitle" id="thank-you-google-subtitle">We’re glad you had a great experience. Would you be willing to share your review on Google too?</p>
+        </div>
+        <button type="button" class="thank-you-modal__close" id="thank-you-google-dismiss" aria-label="Close">&times;</button>
       </div>
-      <div class="thank-you" id="thank-you-5-no">
-        <p>Thank you for your feedback.</p>
+      <div class="thank-you-modal__body">
+        <p class="thank-you-modal__label" id="thank-you-review-label">Your review:</p>
+        <div
+          id="thank-you-review-text"
+          class="thank-you-modal__review"
+          role="region"
+          aria-labelledby="thank-you-review-label"
+        ></div>
+        <p class="thank-you-modal__hint" id="thank-you-google-hint">Copy your review below, then paste it into Google.</p>
+        <div class="thank-you-modal__actions">
+          <button type="button" class="btn btn-copy" id="thank-you-copy-btn">Copy My Review</button>
+          <p class="thank-you-modal__copy-status" id="thank-you-copy-status" role="status" aria-live="polite"></p>
+          <button type="button" class="btn btn-google" id="thank-you-google-btn">
+            <span class="btn-google__icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+              </svg>
+            </span>
+            <span>Leave a Google Review</span>
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -503,8 +901,14 @@
       var path5 = document.getElementById('path-5');
       var thankYou13 = document.getElementById('thank-you-1-3');
       var thankYou4 = document.getElementById('thank-you-4');
-      var thankYou5Yes = document.getElementById('thank-you-5-yes');
-      var thankYou5No = document.getElementById('thank-you-5-no');
+      var googleThankYouModal = document.getElementById('thank-you-google-modal');
+      var thankYouReviewText = document.getElementById('thank-you-review-text');
+      var thankYouCopyBtn = document.getElementById('thank-you-copy-btn');
+      var thankYouGoogleBtn = document.getElementById('thank-you-google-btn');
+      var thankYouCopyStatus = document.getElementById('thank-you-copy-status');
+      var thankYouDismiss = document.getElementById('thank-you-google-dismiss');
+      var lastSubmittedTestimonial = '';
+      var copyStatusTimer = null;
       var feedback13 = document.getElementById('feedback-1-3');
       var feedback4 = document.getElementById('feedback-4');
       var feedback5 = document.getElementById('feedback-5');
@@ -515,11 +919,62 @@
       var urlParams = new URLSearchParams(window.location.search || '');
       var linkEmail = urlParams.get('email') || '';
       var linkContactId = urlParams.get('contact_id') || urlParams.get('contactId') || '';
+      var linkSurveyId = urlParams.get('survey_id') || '';
+      var linkSurveyType = urlParams.get('survey_type') || urlParams.get('type') || '';
+      var linkTemplateRaw = urlParams.get('template') || 'default';
+      var linkTemplate = (function (raw) {
+        var t = (raw || 'default').trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        return t || 'default';
+      })(linkTemplateRaw);
+      var surveyTemplateKey = linkTemplate;
+
+      var introHeadlineEl = document.getElementById('intro-headline');
+      var introBodyEl = document.getElementById('intro-body');
+      var thankYouGoogleTitle = document.getElementById('thank-you-google-title');
+      var thankYouGoogleSubtitle = document.getElementById('thank-you-google-subtitle');
+      var thankYouGoogleHint = document.getElementById('thank-you-google-hint');
+
+      function applySurveyConfig(cfg) {
+        if (!cfg || typeof cfg !== 'object') return;
+        surveyTemplateKey = cfg.survey_template_key || cfg.slug || linkTemplate;
+        if (introHeadlineEl && cfg.introHeadline) {
+          introHeadlineEl.textContent = cfg.introHeadline;
+        }
+        if (introBodyEl && cfg.introBody) {
+          introBodyEl.textContent = cfg.introBody;
+        }
+        if (googleThankYouModal && cfg.googleReviewUrl) {
+          googleThankYouModal.setAttribute('data-google-review-url', cfg.googleReviewUrl);
+        }
+        if (thankYouGoogleTitle && cfg.thankYouTitle) {
+          thankYouGoogleTitle.textContent = cfg.thankYouTitle;
+        }
+        if (thankYouGoogleSubtitle && cfg.thankYouSubtitle) {
+          thankYouGoogleSubtitle.textContent = cfg.thankYouSubtitle;
+        }
+        if (thankYouGoogleHint && cfg.thankYouHint) {
+          thankYouGoogleHint.textContent = cfg.thankYouHint;
+        }
+      }
+
+      fetch('/api/survey-config?template=' + encodeURIComponent(linkTemplate))
+        .then(function (res) {
+          if (!res.ok) return Promise.reject(new Error('config'));
+          return res.json();
+        })
+        .then(applySurveyConfig)
+        .catch(function () {
+          surveyTemplateKey = linkTemplate;
+        });
 
       function getContactPayload() {
         var o = {};
         if (linkEmail) o.email = linkEmail;
         if (linkContactId) o.contact_id = linkContactId;
+        if (linkSurveyId) o.survey_id = linkSurveyId;
+        if (linkSurveyType) o.survey_type = linkSurveyType;
+        o.survey_template_key = surveyTemplateKey;
+        o.pageUri = typeof window !== 'undefined' && window.location ? window.location.href : '';
         return o;
       }
 
@@ -560,8 +1015,7 @@
         path5.classList.remove('visible');
         thankYou13.classList.remove('visible');
         thankYou4.classList.remove('visible');
-        thankYou5Yes.classList.remove('visible');
-        thankYou5No.classList.remove('visible');
+        closeGoogleThankYouModal();
       }
 
       function showRatingStep() {
@@ -679,6 +1133,118 @@
         });
       }
 
+      function getGoogleReviewUrl() {
+        if (!googleThankYouModal) return '';
+        var u = googleThankYouModal.getAttribute('data-google-review-url');
+        return (u && u.trim()) || '';
+      }
+
+      function copyTestimonialToClipboard(text, onDone) {
+        var t = text || '';
+        if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+          navigator.clipboard.writeText(t).then(onDone).catch(function () {
+            fallbackCopy(t, onDone);
+          });
+        } else {
+          fallbackCopy(t, onDone);
+        }
+      }
+
+      function fallbackCopy(text, onDone) {
+        try {
+          var ta = document.createElement('textarea');
+          ta.value = text;
+          ta.setAttribute('readonly', '');
+          ta.style.position = 'fixed';
+          ta.style.left = '-9999px';
+          document.body.appendChild(ta);
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          if (onDone) onDone();
+        } catch (e) {
+          if (onDone) onDone();
+        }
+      }
+
+      function showCopySuccess() {
+        if (!thankYouCopyStatus) return;
+        thankYouCopyStatus.textContent = 'Copied to your clipboard.';
+        thankYouCopyStatus.classList.add('visible');
+        if (copyStatusTimer) clearTimeout(copyStatusTimer);
+        copyStatusTimer = setTimeout(function () {
+          thankYouCopyStatus.classList.remove('visible');
+          thankYouCopyStatus.textContent = '';
+        }, 3500);
+      }
+
+      function openGoogleThankYouModal(testimonialText) {
+        lastSubmittedTestimonial = typeof testimonialText === 'string' ? testimonialText : '';
+        if (thankYouReviewText) {
+          thankYouReviewText.textContent = lastSubmittedTestimonial;
+        }
+        if (thankYouCopyStatus) {
+          thankYouCopyStatus.textContent = '';
+          thankYouCopyStatus.classList.remove('visible');
+        }
+        if (googleThankYouModal) {
+          googleThankYouModal.hidden = false;
+          document.body.style.overflow = 'hidden';
+        }
+        if (thankYouCopyBtn) thankYouCopyBtn.focus();
+      }
+
+      function closeGoogleThankYouModal() {
+        if (!googleThankYouModal || googleThankYouModal.hidden) return;
+        googleThankYouModal.hidden = true;
+        document.body.style.overflow = '';
+        if (copyStatusTimer) {
+          clearTimeout(copyStatusTimer);
+          copyStatusTimer = null;
+        }
+        if (thankYouCopyStatus) {
+          thankYouCopyStatus.textContent = '';
+          thankYouCopyStatus.classList.remove('visible');
+        }
+      }
+
+      if (thankYouCopyBtn && thankYouReviewText) {
+        thankYouCopyBtn.addEventListener('click', function () {
+          copyTestimonialToClipboard(lastSubmittedTestimonial, showCopySuccess);
+        });
+      }
+
+      if (thankYouGoogleBtn) {
+        thankYouGoogleBtn.addEventListener('click', function () {
+          var url = getGoogleReviewUrl();
+          var afterCopy = function () {
+            if (url) {
+              window.open(url, '_blank', 'noopener,noreferrer');
+            }
+          };
+          copyTestimonialToClipboard(lastSubmittedTestimonial, function () {
+            showCopySuccess();
+            afterCopy();
+          });
+        });
+      }
+
+      if (thankYouDismiss) {
+        thankYouDismiss.addEventListener('click', closeGoogleThankYouModal);
+      }
+
+      if (googleThankYouModal) {
+        googleThankYouModal.addEventListener('click', function (e) {
+          if (e.target === googleThankYouModal) closeGoogleThankYouModal();
+        });
+      }
+
+      document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape' && googleThankYouModal && !googleThankYouModal.hidden) {
+          closeGoogleThankYouModal();
+        }
+      });
+
       document.getElementById('submit-5').addEventListener('click', function () {
         var permission = permissionYes && permissionYes.checked ? 'yes' : 'no';
         var val = (feedback5.value || '').trim();
@@ -686,11 +1252,7 @@
           { rating: 5, path: 'testimonial', feedback: val, permission: permission },
           function () {
             path5.classList.remove('visible');
-            if (permission === 'yes') {
-              thankYou5Yes.classList.add('visible');
-            } else {
-              thankYou5No.classList.add('visible');
-            }
+            openGoogleThankYouModal(val);
           },
           showSubmitError
         );
