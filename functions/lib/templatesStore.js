@@ -1,6 +1,10 @@
 const admin = require("firebase-admin");
 const { isValidSlug, normalizeSlug } = require("./slug");
 const { isSafeGoogleReviewUrl } = require("./googleUrl");
+const {
+  SERVICE_SLUG,
+  getServiceTemplateDefaults,
+} = require("./defaultSurveyTemplate");
 
 const COLLECTION = "survey_templates";
 
@@ -67,22 +71,40 @@ async function getTemplateBySlug(slug) {
   const normalized = normalizeSlug(slug);
   if (!isValidSlug(normalized)) return null;
   const snap = await templateRef(normalized).get();
-  return toPublicDoc(normalized, snap);
+  if (snap.exists) return toPublicDoc(normalized, snap);
+  if (normalized === SERVICE_SLUG) {
+    return getServiceTemplateDefaults();
+  }
+  return null;
 }
 
 async function listTemplates() {
   const snap = await db().collection(COLLECTION).limit(100).get();
-  const out = [];
+  const bySlug = new Map();
   snap.forEach((doc) => {
     const d = doc.data();
-    out.push({
+    bySlug.set(doc.id, {
       slug: doc.id,
       name: d.name || doc.id,
       updatedAt: d.updatedAt?.toMillis?.() || null,
       googleReviewUrl: d.googleReviewUrl ? "(set)" : "",
     });
   });
-  out.sort((a, b) => (b.updatedAt || 0) - (a.updatedAt || 0));
+  if (!bySlug.has(SERVICE_SLUG)) {
+    const def = getServiceTemplateDefaults();
+    bySlug.set(SERVICE_SLUG, {
+      slug: def.slug,
+      name: def.name,
+      updatedAt: null,
+      googleReviewUrl: def.googleReviewUrl ? "(set)" : "",
+    });
+  }
+  const out = Array.from(bySlug.values());
+  out.sort((a, b) => {
+    if (a.slug === SERVICE_SLUG) return -1;
+    if (b.slug === SERVICE_SLUG) return 1;
+    return (b.updatedAt || 0) - (a.updatedAt || 0);
+  });
   return out;
 }
 
@@ -118,6 +140,20 @@ async function updateTemplate(slug, body, updatedByEmail) {
   const ref = templateRef(normalized);
   const existing = await ref.get();
   if (!existing.exists) {
+    if (normalized === SERVICE_SLUG) {
+      const v = validateTemplateFields(body, true);
+      if (!v.ok) return { ok: false, status: 400, error: v.error };
+      const now = admin.firestore.FieldValue.serverTimestamp();
+      await ref.set({
+        ...v.data,
+        slug: normalized,
+        createdAt: now,
+        updatedAt: now,
+        updatedByEmail: updatedByEmail || null,
+      });
+      const created = await ref.get();
+      return { ok: true, template: toPublicDoc(normalized, created) };
+    }
     return { ok: false, status: 404, error: "Template not found" };
   }
   const patch = {};
@@ -179,14 +215,18 @@ async function duplicateTemplate(fromSlug, newSlug, newName, updatedByEmail) {
     return { ok: false, status: 400, error: "Invalid slug" };
   }
   const src = await templateRef(from).get();
-  if (!src.exists) {
+  let d;
+  if (src.exists) {
+    d = src.data();
+  } else if (from === SERVICE_SLUG) {
+    d = getServiceTemplateDefaults();
+  } else {
     return { ok: false, status: 404, error: "Source template not found" };
   }
   const dest = await templateRef(to).get();
   if (dest.exists) {
     return { ok: false, status: 409, error: "Target slug already exists" };
   }
-  const d = src.data();
   const name = (newName && String(newName).trim()) || `${d.name || from} (copy)`;
   const now = admin.firestore.FieldValue.serverTimestamp();
   await templateRef(to).set({

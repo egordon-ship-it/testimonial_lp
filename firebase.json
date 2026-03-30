@@ -30,6 +30,8 @@
       { "source": "/api/admin/survey-templates", "function": "adminSurveyTemplates" },
       { "source": "/admin", "destination": "/admin/index.html" },
       { "source": "/admin/", "destination": "/admin/index.html" },
+      { "source": "/service", "destination": "/survey.html" },
+      { "source": "/service/**", "destination": "/survey.html" },
       { "source": "**", "destination": "/index.html" }
     ]
   }

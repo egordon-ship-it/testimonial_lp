@@ -99,6 +99,12 @@
     panelEdit.classList.remove("hidden");
   }
 
+  function previewUrlForSlug(slug) {
+    var s = (slug || "").trim().toLowerCase();
+    if (s === "service") return "/service";
+    return "/survey.html?template=" + encodeURIComponent(s);
+  }
+
   function loadTable() {
     tbody.innerHTML = "<tr><td colspan=\"5\">Loading…</td></tr>";
     return fetchAuth("GET", "/api/admin/survey-templates")
@@ -106,7 +112,7 @@
         var rows = data.templates || [];
         if (!rows.length) {
           tbody.innerHTML =
-            "<tr><td colspan=\"5\">No templates yet. Create one (e.g. slug <strong>default</strong>) so <code>?template=default</code> loads copy from the server.</td></tr>";
+            "<tr><td colspan=\"5\">No templates found. The <strong>service</strong> template should always appear here; refresh or check your connection.</td></tr>";
           return;
         }
         tbody.innerHTML = "";
@@ -131,7 +137,7 @@
             duplicatePrompt(t.slug, t.name);
           }));
           actions.appendChild(actionBtn("Preview", function () {
-            window.open("/?template=" + encodeURIComponent(t.slug), "_blank", "noopener,noreferrer");
+            window.open(previewUrlForSlug(t.slug), "_blank", "noopener,noreferrer");
           }));
           actions.appendChild(actionBtn("Delete", function () {
             if (!window.confirm("Delete template “" + t.slug + "”?")) return;
@@ -254,7 +260,7 @@
 
   btnPreview.addEventListener("click", function () {
     var s = fieldSlug.value.trim();
-    if (s) window.open("/?template=" + encodeURIComponent(s), "_blank", "noopener,noreferrer");
+    if (s) window.open(previewUrlForSlug(s), "_blank", "noopener,noreferrer");
   });
 
   form.addEventListener("submit", function (e) {

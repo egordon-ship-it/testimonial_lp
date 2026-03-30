@@ -1,6 +1,6 @@
 {
   "name": "testimonial-lp-functions",
-  "description": "Backend for testimonial survey - HubSpot form submission",
+  "description": "Backend for testimonial survey - HubSpot CRM API (DM Customer Feedback + Contact rollup)",
   "main": "index.js",
   "engines": {
     "node": "20"

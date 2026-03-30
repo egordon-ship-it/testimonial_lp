@@ -36,34 +36,31 @@ Colors are set with CSS variables at the top of the `<style>` block in `index.ht
 
 ## Backend (Phase 1)
 
-The survey submits to a Firebase Function that proxies to the HubSpot Forms API so credentials stay server-side.
+The survey submits to a Firebase Function that calls the **HubSpot CRM API** (not the Forms API). Behavior is defined in **`doc/hubspot-survey-field-mapping-cursor-ready.md`**:
+
+- **DM Customer Feedback** custom object: survey responses, lifecycle (`survey_status`, timestamps, `submission_url`, `feedback_path`, `crm_reference_id`, etc.).
+- **Contact**: rollup snapshot only (`latest_survey_type`, `latest_survey_rating`, `latest_survey_completed_date`, `latest_survey_feedback`, `latest_testimonial_permission`).
+
+If **`survey_record_id`** is present (HubSpot DM Customer Feedback **record id** from the email link), the function **PATCH**es that record. Otherwise it **POST**s a new custom object record (requires a resolvable `contact_id` or `email`, and optionally `HUBSPOT_DM_CF_CONTACT_ASSOCIATION_TYPE_ID` to associate the record to the contact).
 
 ### Setup
 
-1. **HubSpot form**  
-   In HubSpot, create a form whose **internal names** match `doc/hubspot-survey-field-mapping.md` (DM Customer Feedback) and include at least:
-   - `feedback_title` (single-line; required for Customer Feedback)
-   - `survey_rating` (number 1–5)
-   - `feedback_path` (recovery | improvement | testimonial)
-   - `survey_feedback` (multi-line text)
-   - `survey_status` (completed on submit)
-   - `submitted_at` (datetime)
-   - `testimonial_permission` (yes | no), only sent for the 5-star testimonial path
-   - Optional from URL: `survey_id`, `survey_type` (defaults to `support` if omitted); `email`, `contact_id` for contact association
-   - `survey_template_key` (single-line; from `?template=`; default `default`) — identifies which admin survey template was used
-   - `submission_url` (page URL, sent automatically)
+1. **HubSpot CRM properties**  
+   Ensure the **DM Customer Feedback** custom object and **Contact** properties exist with internal names from `doc/hubspot-survey-field-mapping-cursor-ready.md`. Survey email links should use Contact merge tokens as in that doc (e.g. `survey_record_id` ← `requested_survey_record_id`, `survey_type` ← `requested_survey_type`, `reference_id` ← `requested_survey_reference_id`).
 
 2. **HubSpot private app**  
-   Create a private app with **Forms** scope, copy the **access token**, and note your **portal ID** and the form’s **form GUID** (from the form URL or API).
+   Create a private app with scopes to read/write **contacts** and **DM Customer Feedback** (custom objects), then copy the access token.
 
 3. **Environment variables**  
-   Set these for the Cloud Function (e.g. Firebase Console → Project → Functions → Environment variables):
-   - `HUBSPOT_PORTAL_ID` — your HubSpot portal ID
-   - `HUBSPOT_FORM_GUID` — the form GUID
-   - `HUBSPOT_ACCESS_TOKEN` — private app access token
-   - `ADMIN_EMAIL_ALLOWLIST` — comma-separated Google account emails allowed to sign in to `/admin` (e.g. `ops@company.com,lead@company.com`)
+   Set for the Cloud Function (Firebase Console → Functions → Environment variables):
+   - `HUBSPOT_ACCESS_TOKEN` — private app token
+   - `HUBSPOT_DM_CUSTOMER_FEEDBACK_OBJECT_TYPE_ID` — custom object type ID (e.g. `2-12345678`)
+   - `ADMIN_EMAIL_ALLOWLIST` — comma-separated emails allowed for `/admin`
+   - Optional: `HUBSPOT_DM_CF_CONTACT_ASSOCIATION_TYPE_ID` — association type ID when **creating** a new survey record without `survey_record_id`
+   - Optional: `HUBSPOT_DM_CF_CONTACT_ASSOCIATION_CATEGORY` — default `HUBSPOT_DEFINED` (use `USER_DEFINED` if your portal requires it)
+   - Optional: `SURVEY_VERSION`, `SURVEY_SOURCE_SYSTEM`
 
-   For **local emulator** only, you can put the same vars in `functions/.env` (see `functions/.env.example`; do not commit secrets).
+   For **local emulator**, use `functions/.env` (see `functions/.env.example`; do not commit secrets). If HubSpot vars are missing, the emulator still returns success for submits in demo mode.
 
 4. **Firestore**  
    Deploy rules with `firebase deploy --only firestore` (rules deny all client access; templates are read/written only by Cloud Functions). Create survey templates in **Admin** (or in the Firestore console under `survey_templates`). Use slug `default` for the default landing experience when `?template=` is omitted.
@@ -89,7 +86,7 @@ The survey submits to a Firebase Function that proxies to the HubSpot Forms API 
 
 ## HubSpot Integration (reference)
 
-The backend sends one HubSpot form submission per survey submit with fields aligned to `doc/hubspot-survey-field-mapping.md` (e.g. `survey_rating`, `survey_feedback`, `feedback_path`, `testimonial_permission` on the 5-star path). No embed or client-side HubSpot script is required.
+See **`doc/hubspot-survey-field-mapping-cursor-ready.md`** and **`HUBSPOT_FIELDS.md`**. The function updates CRM directly; no HubSpot form embed is required on the client.
 
 ## Usage
 

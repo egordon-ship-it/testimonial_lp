@@ -1,7 +1,10 @@
 const { normalizeSlug } = require("./slug");
+const { LEGACY_DEFAULT_SLUG, SERVICE_SLUG } = require("./defaultSurveyTemplate");
+const { ALLOWED_SURVEY_TRIGGERS } = require("./hubspotMappingConstants");
 
 /**
  * Validate incoming survey payload (submit-survey).
+ * Field names align with doc/hubspot-survey-field-mapping-cursor-ready.md
  */
 function validatePayload(body) {
   if (!body || typeof body !== "object") return { ok: false, error: "Missing body" };
@@ -37,10 +40,38 @@ function validatePayload(body) {
       : body.contactId != null
         ? String(body.contactId).trim()
         : undefined;
-  const survey_id = body.survey_id != null ? String(body.survey_id).trim() : undefined;
-  if (survey_id !== undefined && survey_id.length > 256) {
-    return { ok: false, error: "Invalid survey_id" };
+
+  let survey_record_id =
+    body.survey_record_id != null ? String(body.survey_record_id).trim() : "";
+  if (!survey_record_id && body.survey_id != null) {
+    survey_record_id = String(body.survey_id).trim();
   }
+  if (survey_record_id.length > 128) {
+    return { ok: false, error: "Invalid survey_record_id" };
+  }
+
+  const reference_id =
+    body.reference_id != null && String(body.reference_id).trim()
+      ? String(body.reference_id).trim().slice(0, 512)
+      : undefined;
+
+  let survey_trigger =
+    body.survey_trigger != null && String(body.survey_trigger).trim()
+      ? String(body.survey_trigger).trim().toLowerCase()
+      : undefined;
+  if (survey_trigger !== undefined && survey_trigger !== "") {
+    if (!ALLOWED_SURVEY_TRIGGERS.includes(survey_trigger)) {
+      return { ok: false, error: "Invalid survey_trigger" };
+    }
+  } else {
+    survey_trigger = undefined;
+  }
+
+  const feedback_path =
+    body.feedback_path != null && String(body.feedback_path).trim()
+      ? String(body.feedback_path).trim().slice(0, 512)
+      : undefined;
+
   const surveyTypeRaw =
     body.survey_type != null
       ? String(body.survey_type).trim().toLowerCase()
@@ -56,13 +87,13 @@ function validatePayload(body) {
     survey_type = "support";
   }
 
-  let survey_template_key = "default";
+  let survey_template_key = "service";
   if (body.survey_template_key != null && String(body.survey_template_key).trim() !== "") {
     const k = normalizeSlug(String(body.survey_template_key));
     if (k.length < 1 || k.length > 64) {
       return { ok: false, error: "Invalid survey_template_key" };
     }
-    survey_template_key = k;
+    survey_template_key = k === LEGACY_DEFAULT_SLUG ? SERVICE_SLUG : k;
   }
 
   const pageUri = body.pageUri != null ? String(body.pageUri).trim() : undefined;
@@ -79,7 +110,10 @@ function validatePayload(body) {
       feedback_title,
       email: email || undefined,
       contact_id: contact_id || undefined,
-      survey_id: survey_id || undefined,
+      survey_record_id: survey_record_id || undefined,
+      reference_id,
+      survey_trigger,
+      feedback_path,
       survey_type,
       survey_template_key,
       pageUri: pageUri || undefined,

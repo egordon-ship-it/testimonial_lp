@@ -4,7 +4,7 @@
  * The API key is restricted in Console; it is safe to ship for client Auth only.
  */
 window.firebaseConfig = {
-  apiKey: "REPLACE_WITH_WEB_API_KEY",
+  apiKey: "AIzaSyBRL8xmDoItHx0IYZPTMlGZ2HsVqvllED0",
   authDomain: "dm-customer-testimonial.firebaseapp.com",
   projectId: "dm-customer-testimonial",
 };

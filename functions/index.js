@@ -6,9 +6,10 @@ const admin = require("firebase-admin");
 const { onRequest } = require("firebase-functions/v2/https");
 
 const { applyCors, handleOptions } = require("./lib/cors");
-const { HUBSPOT_SUBMIT_URL, getHubSpotConfig, buildHubSpotFields } = require("./lib/hubspot");
+const { syncSurveyHubSpot, getHubSpotCrmConfig } = require("./lib/hubspotSurveySync");
 const { validatePayload } = require("./lib/surveyPayload");
 const { isValidSlug, normalizeSlug } = require("./lib/slug");
+const { SERVICE_SLUG, LEGACY_DEFAULT_SLUG } = require("./lib/defaultSurveyTemplate");
 const templatesStore = require("./lib/templatesStore");
 
 if (!admin.apps.length) {
@@ -60,51 +61,28 @@ const submitSurvey = onRequest({ cors: false, invoker: "public" }, async (req, r
     return;
   }
 
-  const config = getHubSpotConfig();
-  if (!config) {
+  const crmConfig = getHubSpotCrmConfig();
+  if (!crmConfig) {
     if (process.env.FUNCTIONS_EMULATOR === "true") {
-      console.log("[demo] Survey submitted (HubSpot not configured):", JSON.stringify(validation.payload));
+      console.log("[demo] Survey submitted (HubSpot CRM not configured):", JSON.stringify(validation.payload));
       res.status(200).json({ success: true });
       return;
     }
-    console.error("HubSpot config missing: HUBSPOT_PORTAL_ID, HUBSPOT_FORM_GUID, HUBSPOT_ACCESS_TOKEN");
+    console.error("HubSpot CRM config missing: HUBSPOT_ACCESS_TOKEN, HUBSPOT_DM_CUSTOMER_FEEDBACK_OBJECT_TYPE_ID");
     res.status(503).json({ error: "Survey submission is not configured" });
     return;
   }
 
-  const { portalId, formGuid, accessToken } = config;
-  const fields = buildHubSpotFields(validation.payload);
-  const submitBody = {
-    fields,
-    submittedAt: Date.now(),
-    context: {
-      pageUri: req.body.pageUri || "",
-      pageName: req.body.pageName || "Testimonial Survey",
-    },
-  };
-
-  const url = `${HUBSPOT_SUBMIT_URL}/${portalId}/${formGuid}`;
   try {
-    const hubRes = await fetch(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${accessToken}`,
-      },
-      body: JSON.stringify(submitBody),
-    });
-
-    if (!hubRes.ok) {
-      const text = await hubRes.text();
-      console.error("HubSpot submit failed", hubRes.status, text);
-      res.status(502).json({ error: "Failed to submit to HubSpot" });
+    const result = await syncSurveyHubSpot(validation.payload);
+    if (!result.ok) {
+      res.status(result.status || 502).json({ error: result.error || "Failed to sync to HubSpot" });
       return;
     }
-
     res.status(200).json({ success: true });
   } catch (err) {
-    console.error("HubSpot request error", err);
-    res.status(502).json({ error: "Failed to submit to HubSpot" });
+    console.error("HubSpot CRM sync error", err);
+    res.status(502).json({ error: "Failed to sync to HubSpot" });
   }
 });
 
@@ -116,8 +94,11 @@ const getSurveyConfig = onRequest({ cors: false, invoker: "public" }, async (req
     return;
   }
 
-  const templateParam = req.query.template != null ? String(req.query.template) : "default";
-  const slug = normalizeSlug(templateParam) || "default";
+  const templateParam = req.query.template != null ? String(req.query.template) : "service";
+  let slug = normalizeSlug(templateParam) || "service";
+  if (slug === LEGACY_DEFAULT_SLUG) {
+    slug = SERVICE_SLUG;
+  }
 
   if (!isValidSlug(slug)) {
     res.status(400).json({ error: "Invalid template parameter" });
