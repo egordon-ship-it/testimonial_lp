@@ -6,8 +6,11 @@
 
 const crypto = require("crypto");
 const { ALLOWED_SURVEY_TRIGGERS } = require("./hubspotMappingConstants");
-
-const HUBSPOT_API = "https://api.hubapi.com";
+const { hubspotFetch } = require("./hubspotApi");
+const {
+  fillDmCustomerFeedbackCreateProperties,
+  formatHubSpotErrorMessage,
+} = require("./hubspotCreateProperties");
 
 function getHubSpotCrmConfig() {
   const accessToken = process.env.HUBSPOT_ACCESS_TOKEN;
@@ -24,28 +27,6 @@ function getHubSpotCrmConfig() {
     surveyVersion: process.env.SURVEY_VERSION || "v1",
     surveySourceSystem: process.env.SURVEY_SOURCE_SYSTEM || "testimonial_lp",
   };
-}
-
-async function hubspotFetch(path, accessToken, options = {}) {
-  const url = path.startsWith("http") ? path : `${HUBSPOT_API}${path}`;
-  const res = await fetch(url, {
-    ...options,
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
-  });
-  const text = await res.text();
-  let data = null;
-  if (text) {
-    try {
-      data = JSON.parse(text);
-    } catch {
-      data = { raw: text };
-    }
-  }
-  return { ok: res.ok, status: res.status, data };
 }
 
 /**
@@ -223,23 +204,32 @@ async function syncSurveyHubSpot(payload) {
   if (surveyRecordId) {
     const patchRes = await patchCustomObjectRecord(objectTypeId, surveyRecordId, dmProps, accessToken);
     if (!patchRes.ok) {
-      const msg =
-        (patchRes.data && (patchRes.data.message || patchRes.data.error)) ||
-        `HubSpot custom object update failed (${patchRes.status})`;
+      const msg = formatHubSpotErrorMessage(patchRes.data) || `HubSpot custom object update failed (${patchRes.status})`;
       console.error("HubSpot PATCH DM Customer Feedback", patchRes.status, patchRes.data);
       return { ok: false, error: msg, status: patchRes.status >= 500 ? 502 : 400 };
     }
   } else {
     if (!contactId) {
+      const hasEmail = payload.email && String(payload.email).trim();
+      const error = hasEmail
+        ? "No HubSpot contact found with this link's email as primary email. Fix the contact in HubSpot, or use a link that includes survey_record_id (or contact_id)."
+        : "This link is missing survey_record_id and has no email or contact_id. Use the full link from your email (with merge tokens), or add ?email=... or ?contact_id=... that match a HubSpot contact.";
       return {
         ok: false,
-        error:
-          "Missing survey_record_id and no HubSpot contact could be resolved (provide contact_id or email that matches a contact).",
+        error,
         status: 400,
       };
     }
     const newSurveyId = crypto.randomUUID();
     const createProps = { ...dmProps, survey_id: newSurveyId };
+    await fillDmCustomerFeedbackCreateProperties(
+      objectTypeId,
+      accessToken,
+      createProps,
+      payload,
+      newSurveyId,
+      nowIso
+    );
     const postRes = await postCustomObjectRecord(
       objectTypeId,
       createProps,
@@ -249,10 +239,9 @@ async function syncSurveyHubSpot(payload) {
       associationCategory
     );
     if (!postRes.ok) {
-      const msg =
-        (postRes.data && (postRes.data.message || postRes.data.error)) ||
-        `HubSpot custom object create failed (${postRes.status})`;
-      console.error("HubSpot POST DM Customer Feedback", postRes.status, postRes.data);
+      const data = postRes.data;
+      const msg = formatHubSpotErrorMessage(data) || `HubSpot custom object create failed (${postRes.status})`;
+      console.error("HubSpot POST DM Customer Feedback", postRes.status, data);
       return { ok: false, error: msg, status: postRes.status >= 500 ? 502 : 400 };
     }
   }
@@ -264,8 +253,7 @@ async function syncSurveyHubSpot(payload) {
       return {
         ok: false,
         error:
-          (contactPatch.data && (contactPatch.data.message || contactPatch.data.error)) ||
-          "Failed to update contact rollup fields",
+          formatHubSpotErrorMessage(contactPatch.data) || "Failed to update contact rollup fields",
         status: 502,
       };
     }
